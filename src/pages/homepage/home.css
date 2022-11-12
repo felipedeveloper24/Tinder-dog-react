@@ -1,0 +1,10 @@
+*{
+    margin: 0px;
+    padding: 0px;
+}
+.main-container{
+    display: flex;
+    background-color: #1e293b;
+    flex-direction: column;
+    min-height: 100vh;
+}
