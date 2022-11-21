@@ -1,56 +1,78 @@
-import axios from "axios";
+
 import React from "react";
-import { useEffect } from "react";
 import { useState } from "react";
-
 import "./showDogs.css";
-
+import { getDog } from "../../api/querys";
+import {useQuery} from "react-query";
+import { CircularProgress,Button,Modal, Card,Grid, Typography,Alert,CardContent } from "@mui/material";
+import {Box} from "@mui/material";
+import Dog from "../dog/dog.component";
+import {Image} from "mui-image";
+import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
+import NotInterestedIcon from '@mui/icons-material/NotInterested';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import ChangeCircleIcon from '@mui/icons-material/ChangeCircle';
 const ShowDogs = () => {
-    const BASE_API = "https://dog.ceo/api/breeds/image/random";
-
-    const [perro, setPerro] = useState({});
+    const {data,isLoading,refetch} = useQuery("perro",getDog,{refetchInterval:4000})
+    
     const [aprobados, setAprobados] = useState([]);
     const [rechazados, setRechazados] = useState([]);
-    const [cargando,setCargando] = useState(false);
     const [contador,setContador] = useState(0);
-    useEffect(()=>{
-        getDog();
-    },[]);
-    const getDog = async ()=>{
-        const response = await axios.get(BASE_API);
-        setPerro(response.data);
-        setCargando(true);
-
-    }
-    const like = (img)=>{
+    const [nombre, setNombre] = useState("");
+    const description = "error voluptatum quibusdam quisquam odio, perspiciatis dolor blanditiis. Dicta velit maiores consequatur animi! Doloribus."
+    
+    const like = (img,description)=>{
+        
         let perro = {
             id: contador,
             nombre: generateRandomString(6),
-            img:img
+            img:img,
+            description:description,
+            state:true,
         }
         setContador(contador+1);
-        let perritosaprobados = aprobados.concat(perro)
-
-        let perritosordenados = perritosaprobados.sort()
-
-        setAprobados(perritosordenados);
-
-        getDog()
-
+        let perritosaprobados = aprobados.concat(perro);
+    
+        setAprobados(perritosaprobados.reverse());
+        
     }
-    const dislike = (img) =>{
+    const dislike = (img,description) =>{
         setContador(contador+1);
 
         let perro = {
             id: contador,
             nombre: generateRandomString(6),
-            img:img
+            img:img,
+            description:description,
+            state:false
         }
         let perritosrechazados = rechazados.concat(perro);
-        setRechazados(perritosrechazados);
-
-        getDog()
+        setRechazados(perritosrechazados.reverse());
+      
     }
+
+    const arrepentido = (perro)=>{
+       
+        if(perro.state===true){
+    
+            perro.state = false;
+            let perros_rechazados = rechazados.concat(perro);
+            setRechazados(perros_rechazados);
+            let aprobados_actualizado = aprobados.filter((perro_original)=> perro_original.nombre !== perro.nombre );
+            setAprobados(aprobados_actualizado.reverse());
+
+        }else if(perro.state===false){
+            
+            perro.state = true;
+            let perros_aprobados = aprobados.concat(perro);
+            setAprobados(perros_aprobados);
+            let rechazados_actualizado = rechazados.filter((perrox)=> perrox.nombre !== perro.nombre );
+            setRechazados(rechazados_actualizado.reverse());
+        }
+        
+    }
+
+
     const generateRandomString = (cant) => {
         const caracteres ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
         let cadena= ' ';
@@ -61,56 +83,204 @@ const ShowDogs = () => {
         return cadena;
     }
 
-
-    if(cargando){
+    if(isLoading){
         return(
-            <div className="contenedor">
-                <div className="box">
-                    <h1>Perros aprobados</h1>
-                    {
-                        aprobados.map((perro,idx)=>{
-                            return(
-                                <div className="cajita" key={idx}>
-                                    <h1>{perro.nombre}</h1>
-                                    <img src={perro.img} alt="" />
-                                </div>
-                            )
-                        })
-                    }
-                </div>
-                <div className="box-perros">
-                    <h1 className="text-white">Perrito candidato</h1>
-                    <img src={perro.message} className="img" alt="" />
-                    <div className="box-button">
-                        <button className="btn btn-primary" onClick={()=> like(perro.message) } >Me gusta</button>
-                        <button className="btn btn-danger" onClick={()=> dislike(perro.message) } >No me gusta</button>
-                    </div>
-                    
-                </div>
-                <div className="box">
-                    <h1>Perros rechazados</h1>
-                    {
-                        rechazados.map((perro,idx)=>{
-                            return(
-                                <div className="cajita" key={idx}>
-                                    <h1>{perro.nombre}</h1>
-                                    <img src={perro.img} alt="" />
-                                </div>
-                            )
-                        })
-                    }
-                </div>
-    
-            </div>
-        )
-    }else{
-        return(
-            <div>
-                Cargando datos .........
-            </div>
+            <div className="spinner">
+                <CircularProgress color="success" />
+            </div> 
         )
     }
-    
+  
+    return(
+        <Box
+         sx={{
+            display:"flex",
+            width:'100%',
+            flexDirection: "row",
+            marginTop:"20px",
+            justifyContent:"center"
+           
+         }}
+        >
+             {/* Card de perrito Candidato */}
+            <Card
+                 sx={{
+                    width:'30%',
+                    display:"flex",
+                    flexDirection:"column",
+                    alignItems:"center",
+                    padding:"10px",
+                    height:"auto",
+                    marginTop:"15px",
+                    marginRight:"10px"
+                   
+                }}
+            >
+             <Card outlined="true" sx={{
+                width:"70%",
+                padding:"20px",
+                display: "flex",
+                flexDirection:"column",
+                justifyContent:"center",
+                alignItems:"center",
+                boxShadow: 3,
+                marginTop:"10px",
+                marginBottom:"10px"
+            }}>
+            <Typography variant="h4" >Hola</Typography>
+            <Image 
+                src={data.message}
+                width="250px"
+                height="250px"
+                style={{
+                    borderRadius:"40px"
+                }}
+             />
+            <CardContent>
+                 {description}
+            </CardContent>
+            <Box
+                sx={{
+                    display:"flex",
+                    justifyContent:"flex-start",
+                    marginTop:"5px"
+                }}
+            >
+                <ThumbUpOffAltIcon
+                    sx={{
+                        width:"30px",
+                        cursor:"pointer",
+                        marginRight:"10px"
+                    }}
+                    color="primary"
+                    onClick={()=>like(data.message,description)}
+                />
+                <NotInterestedIcon
+                    sx={{
+                        width:"30px",
+                        cursor:"pointer"
+                    }}
+                    color="error"
+                    onClick={()=>{dislike(data.message,description); getDog() } }
+                />
+            
+            </Box>
+           
+            </Card>
+                
+
+            </Card>
+            
+            {/* Card de perritos aprobados */}
+           
+            <Grid
+                sx={{
+                    width:"30%",
+                    marginTop:"10px",
+                    height:"auto",
+                    marginRight:"10px",
+                    display:"flex",
+                    flexDirection:"column",
+                    alignItems:"center",
+                    overflowY:"scroll",
+                    backgroundColor:"white",
+
+                }}
+            >
+                <Typography variant="h5" sx={{marginTop:"10px"}} >Perritos Aprobados</Typography>
+            {
+                aprobados.length > 0 ? aprobados.map((perro,idx)=> {
+                    return (
+                    <Card key={idx}
+                        sx={{
+                            width:"100%",
+                            display:"flex",
+                            flexDirection:"column",
+                            alignItems:"center",
+                            padding:"10px",
+                            height:"450px",
+                           
+                        }}
+                    >
+                        <Dog title={perro.nombre} url={perro.img} description={description}  />
+                        <Box 
+                            sx={{
+                                display:"flex",
+                                flexDirection:"flex",
+                                justifyContent:"flex-start"
+                            }}
+                        >
+                            <ChangeCircleIcon
+                                sx={{
+                                    cursor:"pointer"
+                                }}
+                            
+                                color="primary"
+                                onClick={()=>{arrepentido(perro); refetch(getDog)}}
+                            />
+                            <VisibilityIcon color="primary"/>
+                            
+
+                        </Box>
+                    </Card> 
+                 )}) : <Alert severity="error" sx={{marginTop:"10px"}} >No hay perritos seleccionados</Alert>
+            }
+            </Grid>
+           
+        
+            {/* Box de perritos rechazados */}
+            <Grid
+                  sx={{
+                    width:"30%",
+                    height:"auto",
+                    marginTop:"10px",
+                    marginLeft:"10px",
+                    display:"flex",
+                    flexDirection:"column",
+                    alignItems:"center",
+                    overflowY:"scroll",
+                    position:"relative",
+                    backgroundColor:"white"
+                }}
+            >
+                 <Typography variant="h5" sx={{marginTop:"10px"}} >Perritos Rechazados</Typography>
+                 {
+                rechazados.length > 0 ? rechazados.map((perro,idx)=> {
+                    return (
+                    <Card key={idx}
+                        sx={{
+                            width:"100%",
+                            display:"flex",
+                            flexDirection:"column",
+                            alignItems:"center",
+                            padding:"10px"
+                        }}
+                    >
+                        <Dog title={perro.nombre} url={perro.img}  description={perro.description} />
+                        <Box 
+                            sx={{
+                                display:"flex",
+                                flexDirection:"flex",
+                                justifyContent:"flex-start"
+                            }}
+                        >
+                            <ChangeCircleIcon
+                                sx={{
+                                    cursor:"pointer"
+                                }}
+                            
+                                color="primary"
+                                onClick={()=>{arrepentido(perro); refetch(getDog)}}
+                            />
+                            <VisibilityIcon color="primary"/>
+                        </Box>
+                    </Card> 
+                 )}) : <Alert sx={{marginTop:"10px"}} severity="error">No hay perritos seleccionados</Alert>
+            }
+            </Grid>
+
+        </Box>
+    )
 };
 
 export default ShowDogs;
