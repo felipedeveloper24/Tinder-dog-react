@@ -10,7 +10,7 @@ import Dog from "../dog/dog.component";
 import { Image } from "mui-image";
 import ThumbUpOffAltIcon from '@mui/icons-material/ThumbUpOffAlt';
 import NotInterestedIcon from '@mui/icons-material/NotInterested';
-
+import Tooltip from '@mui/material/Tooltip';
 import ChangeCircleIcon from '@mui/icons-material/ChangeCircle';
 const ShowDogs = () => {
 
@@ -153,24 +153,27 @@ const ShowDogs = () => {
                             marginTop: "5px"
                         }}
                     >
-                        <ThumbUpOffAltIcon
-                            sx={{
-                                width: "30px",
-                                cursor: "pointer",
-                                marginRight: "10px"
-                            }}
-                            color="primary"
-                            onClick={() =>{ like(data.message, description); refetch(getDog) }}
-                        />
-                        <NotInterestedIcon
-                            sx={{
-                                width: "30px",
-                                cursor: "pointer"
-                            }}
-                            color="error"
-                            onClick={() => { dislike(data.message, description); refetch(getDog) }}
-                        />
-
+                        <Tooltip title="Me gusta">
+                            <ThumbUpOffAltIcon
+                                sx={{
+                                    width: "30px",
+                                    cursor: "pointer",
+                                    marginRight: "10px"
+                                }}
+                                color="primary"
+                                onClick={() =>{ like(data.message, description); refetch(getDog) }}
+                            />
+                        </Tooltip>
+                        <Tooltip title="No me gusta">
+                            <NotInterestedIcon
+                                sx={{
+                                    width: "30px",
+                                    cursor: "pointer"
+                                }}
+                                color="error"
+                                onClick={() => { dislike(data.message, description); refetch(getDog) }}
+                            />
+                        </Tooltip>
                     </Box>
 
                 </Card>
@@ -218,6 +221,7 @@ const ShowDogs = () => {
                                         justifyContent: "flex-start"
                                     }}
                                 >
+                                <Tooltip title="Arrepentirme">
                                     <ChangeCircleIcon
                                         sx={{
                                             cursor: "pointer"
@@ -226,7 +230,7 @@ const ShowDogs = () => {
                                         color="primary"
                                         onClick={() => { arrepentido(perro); refetch(getDog) }}
                                     />
-                                
+                                </Tooltip>
 
 
                                 </Box>
@@ -278,15 +282,16 @@ const ShowDogs = () => {
                                         justifyContent: "flex-start"
                                     }}
                                 >
-                                    <ChangeCircleIcon
-                                        sx={{
-                                            cursor: "pointer"
-                                        }}
+                                    <Tooltip title="Arrepentirse" >
+                                        <ChangeCircleIcon
+                                            sx={{
+                                                cursor: "pointer"
+                                            }}
 
-                                        color="primary"
-                                        onClick={() => { arrepentido(perro); refetch(getDog) }}
-                                    />
-                                    
+                                            color="primary"
+                                            onClick={() => { arrepentido(perro); refetch(getDog) }}
+                                        />
+                                    </Tooltip>
                                 </Box>
                             </Grid>
                         )
